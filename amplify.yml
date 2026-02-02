@@ -1,0 +1,22 @@
+version: 1
+frontend:
+  phases:
+    preBuild:
+      commands:
+        - cd frontend
+        - npm ci
+        - echo "NEXT_PUBLIC_USER_POOL_ID=$NEXT_PUBLIC_USER_POOL_ID" >> .env.local
+        - echo "NEXT_PUBLIC_USER_POOL_CLIENT_ID=$NEXT_PUBLIC_USER_POOL_CLIENT_ID" >> .env.local
+        - echo "NEXT_PUBLIC_REGION=$NEXT_PUBLIC_REGION" >> .env.local
+        - echo "NEXT_PUBLIC_IDENTITY_POOL_ID=$NEXT_PUBLIC_IDENTITY_POOL_ID" >> .env.local
+        - echo "NEXT_PUBLIC_DYNAMODB_TABLE=$NEXT_PUBLIC_DYNAMODB_TABLE" >> .env.local
+    build:
+      commands:
+        - npm run build
+  artifacts:
+    baseDirectory: frontend/.next
+    files:
+      - '**/*'
+  cache:
+    paths:
+      - frontend/node_modules/**/*

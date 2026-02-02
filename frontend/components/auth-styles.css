@@ -1,0 +1,167 @@
+/* CloudSentry Auth Styling */
+
+/* Auth Page Container - Center everything */
+[data-amplify-authenticator] {
+    min-height: 100vh;
+    background: #0a0a0a;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 1rem;
+    position: relative;
+}
+
+/* Background gradient */
+[data-amplify-authenticator]::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(120, 53, 15, 0.2) 0%, #0a0a0a 50%, #0a0a0a 100%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* Subtle grid pattern */
+[data-amplify-authenticator]::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    opacity: 0.02;
+    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* Amplify Variables */
+[data-amplify-authenticator] {
+    --amplify-colors-background-primary: transparent;
+    --amplify-colors-background-secondary: rgba(38, 38, 38, 0.5);
+    --amplify-colors-border-primary: rgba(255, 255, 255, 0.1);
+    --amplify-colors-border-secondary: rgba(255, 255, 255, 0.05);
+    --amplify-colors-font-primary: #ededed;
+    --amplify-colors-font-secondary: #a3a3a3;
+    --amplify-colors-font-interactive: #f59e0b;
+    --amplify-colors-brand-primary-10: #fef3c7;
+    --amplify-colors-brand-primary-80: #f59e0b;
+    --amplify-colors-brand-primary-90: #d97706;
+    --amplify-colors-brand-primary-100: #b45309;
+    --amplify-radii-small: 0.5rem;
+    --amplify-radii-medium: 0.75rem;
+    --amplify-radii-large: 1rem;
+}
+
+/* Container Adjustments */
+[data-amplify-authenticator] [data-amplify-container] {
+    background: rgba(23, 23, 23, 0.6) !important;
+    backdrop-filter: blur(24px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 1rem;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    padding: 2rem !important;
+    width: 100% !important;
+    max-width: 32rem !important;
+    margin: 0 auto !important;
+    position: relative;
+    z-index: 10;
+}
+
+[data-amplify-authenticator] [data-amplify-router] {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    width: 100% !important;
+}
+
+[data-amplify-authenticator] form {
+    width: 100% !important;
+}
+
+/* Tabs */
+[data-amplify-authenticator] .amplify-tabs {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+[data-amplify-authenticator] .amplify-tabs-item {
+    color: #a3a3a3;
+    background: transparent;
+    border: none;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+[data-amplify-authenticator] .amplify-tabs-item:hover {
+    color: #ededed;
+}
+
+[data-amplify-authenticator] .amplify-tabs-item[data-state="active"] {
+    color: #f59e0b;
+    border-bottom: 2px solid #f59e0b;
+    background: transparent;
+}
+
+/* Input Fields */
+[data-amplify-authenticator] .amplify-input,
+[data-amplify-authenticator] .amplify-field-group__control {
+    background: rgba(23, 23, 23, 0.8) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    border-radius: 0.75rem !important;
+    color: #ededed !important;
+    padding: 0.875rem 1rem !important;
+    transition: all 0.2s ease !important;
+}
+
+[data-amplify-authenticator] .amplify-input:focus,
+[data-amplify-authenticator] .amplify-field-group__control:focus {
+    border-color: rgba(255, 255, 255, 0.3) !important;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.05) !important;
+    outline: none !important;
+}
+
+[data-amplify-authenticator] .amplify-input::placeholder {
+    color: #525252 !important;
+}
+
+/* Labels */
+[data-amplify-authenticator] .amplify-label {
+    color: #a3a3a3 !important;
+    font-size: 0.875rem !important;
+    font-weight: 500 !important;
+    margin-bottom: 0.5rem !important;
+}
+
+/* Primary Button */
+[data-amplify-authenticator] .amplify-button--primary {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
+    border: none !important;
+    border-radius: 0.75rem !important;
+    color: white !important;
+    font-weight: 600 !important;
+    padding: 0.875rem 1.5rem !important;
+    transition: all 0.2s ease !important;
+    box-shadow: 0 4px 14px 0 rgba(245, 158, 11, 0.25) !important;
+    width: 100% !important;
+}
+
+[data-amplify-authenticator] .amplify-button--primary:hover {
+    transform: translateY(-1px) !important;
+    box-shadow: 0 6px 20px 0 rgba(245, 158, 11, 0.35) !important;
+}
+
+[data-amplify-authenticator] .amplify-button--primary:active {
+    transform: translateY(0) !important;
+}
+
+/* Link Buttons */
+[data-amplify-authenticator] .amplify-button--link {
+    color: #f59e0b !important;
+    font-weight: 500 !important;
+}
+
+[data-amplify-authenticator] .amplify-button--link:hover {
+    color: #fbbf24 !important;
+}
+
+/* Hide footer */
+[data-amplify-authenticator] [data-amplify-footer] {
+    display: none !important;
+}
