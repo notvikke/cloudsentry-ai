@@ -215,6 +215,9 @@ class CloudsentryAiStack(Stack):
         # Allow invoking Remediator Lambda (Remediate Threat)
         remediator_lambda.grant_invoke(authenticated_role)
         
+        # Allow reading DynamoDB Findings (Real-time Data)
+        table.grant_read_data(authenticated_role)
+        
         # Allow reading DynamoDB Findings (Real-time Data) (Already in place? No, need to add)
         table.grant_read_data(authenticated_role)
 
