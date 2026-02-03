@@ -1,14 +1,24 @@
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient, ScanCommand } from "@aws-sdk/lib-dynamodb";
 import { SecurityFinding } from "./mockData";
-
-const client = new DynamoDBClient({ region: "us-east-1" });
-const docClient = DynamoDBDocumentClient.from(client);
+import { fetchAuthSession } from 'aws-amplify/auth';
 
 const TABLE_NAME = "CloudsentryAiStack-SecurityFindings64B9F477-155IPLHOF31MI";
 
 export async function getRealTimeFindings(): Promise<SecurityFinding[]> {
     try {
+        const session = await fetchAuthSession();
+        if (!session.credentials) {
+            console.warn("No credentials found");
+            return [];
+        }
+
+        const client = new DynamoDBClient({
+            region: "us-east-1",
+            credentials: session.credentials
+        });
+        const docClient = DynamoDBDocumentClient.from(client);
+
         const command = new ScanCommand({
             TableName: TABLE_NAME,
         });
