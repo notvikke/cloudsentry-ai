@@ -26,7 +26,7 @@ export async function getRealTimeFindings(): Promise<SecurityFinding[]> {
         const response = await docClient.send(command);
         const items = response.Items || [];
 
-        return items.map((item: any) => {
+        return items.map((item: Record<string, any>) => {
             // Parse the JSON strings stored in DynamoDB
             let analysis = { reasoning: "No analysis provided", action_summary: "Unknown Event" };
             let event = { detail: { eventName: "Unknown" } };

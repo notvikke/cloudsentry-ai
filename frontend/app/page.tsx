@@ -1,5 +1,5 @@
 import DashboardWrapper from '@/components/dashboard/DashboardWrapper';
-import { getRealTimeFindings } from '@/lib/dynamo';
+import DashboardWrapper from '@/components/dashboard/DashboardWrapper';
 import { DEMO_FINDINGS } from '@/lib/demoData';
 
 

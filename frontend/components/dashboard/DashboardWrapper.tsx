@@ -9,11 +9,11 @@ import DashboardClientWrapper from '@/components/dashboard/DashboardClientWrappe
 import { ShieldCheck, AlertTriangle, Activity } from 'lucide-react';
 
 interface DashboardWrapperProps {
-    realFindings: SecurityFinding[];
+    realFindings?: SecurityFinding[]; // Optional/Unused
     demoFindings: SecurityFinding[];
 }
 
-export default function DashboardWrapper({ realFindings, demoFindings }: DashboardWrapperProps) {
+export default function DashboardWrapper({ demoFindings }: DashboardWrapperProps) {
     const [isAdmin, setIsAdmin] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [findings, setFindings] = useState<SecurityFinding[]>(demoFindings || []); // Default to demo or empty
