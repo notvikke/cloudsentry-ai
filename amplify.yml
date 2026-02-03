@@ -1,22 +1,24 @@
 version: 1
-frontend:
-  phases:
-    preBuild:
-      commands:
-        - cd frontend
-        - npm install
-        - echo "NEXT_PUBLIC_USER_POOL_ID=$NEXT_PUBLIC_USER_POOL_ID" >> .env.local
-        - echo "NEXT_PUBLIC_USER_POOL_CLIENT_ID=$NEXT_PUBLIC_USER_POOL_CLIENT_ID" >> .env.local
-        - echo "NEXT_PUBLIC_REGION=$NEXT_PUBLIC_REGION" >> .env.local
-        - echo "NEXT_PUBLIC_IDENTITY_POOL_ID=$NEXT_PUBLIC_IDENTITY_POOL_ID" >> .env.local
-        - echo "NEXT_PUBLIC_DYNAMODB_TABLE=$NEXT_PUBLIC_DYNAMODB_TABLE" >> .env.local
-    build:
-      commands:
-        - npm run build
-  artifacts:
-    baseDirectory: frontend
-    files:
-      - '**/*'
-  cache:
-    paths:
-      - frontend/node_modules/**/*
+applications:
+  - frontend:
+      phases:
+        preBuild:
+          commands:
+            - cd frontend
+            - npm install
+        build:
+          commands:
+            - echo "NEXT_PUBLIC_USER_POOL_ID=$NEXT_PUBLIC_USER_POOL_ID" >> .env.production
+            - echo "NEXT_PUBLIC_USER_POOL_CLIENT_ID=$NEXT_PUBLIC_USER_POOL_CLIENT_ID" >> .env.production
+            - echo "NEXT_PUBLIC_REGION=$NEXT_PUBLIC_REGION" >> .env.production
+            - echo "NEXT_PUBLIC_IDENTITY_POOL_ID=$NEXT_PUBLIC_IDENTITY_POOL_ID" >> .env.production
+            - echo "NEXT_PUBLIC_DYNAMODB_TABLE=$NEXT_PUBLIC_DYNAMODB_TABLE" >> .env.production
+            - npm run build
+      artifacts:
+        baseDirectory: frontend
+        files:
+          - '**/*'
+      cache:
+        paths:
+          - frontend/node_modules/**/*
+    appRoot: frontend
