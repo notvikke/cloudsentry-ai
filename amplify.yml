@@ -14,7 +14,7 @@ frontend:
         - echo "NEXT_PUBLIC_IDENTITY_POOL_ID=$NEXT_PUBLIC_IDENTITY_POOL_ID" >> .env.production
         - echo "NEXT_PUBLIC_DYNAMODB_TABLE=$NEXT_PUBLIC_DYNAMODB_TABLE" >> .env.production
         - npm run build
-        - echo "--- DEBUG: LISTING .NEXT DIRECTORY ---"
+        - echo "DEBUG LISTING NEXT DIRECTORY"
         - ls -la .next
   artifacts:
     baseDirectory: frontend/.next
