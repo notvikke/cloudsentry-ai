@@ -4,7 +4,7 @@ import DashboardClientWrapper from '@/components/dashboard/DashboardClientWrappe
 import { ShieldCheck, AlertTriangle, Activity } from 'lucide-react';
 import { DEMO_FINDINGS } from '@/lib/demoData';
 
-export const revalidate = 0;
+
 
 export default function DemoPage() {
     const findings = DEMO_FINDINGS;
