@@ -4,7 +4,6 @@ applications:
       phases:
         preBuild:
           commands:
-            - cd frontend
             - npm install
         build:
           commands:
@@ -15,10 +14,10 @@ applications:
             - echo "NEXT_PUBLIC_DYNAMODB_TABLE=$NEXT_PUBLIC_DYNAMODB_TABLE" >> .env.production
             - npm run build
       artifacts:
-        baseDirectory: frontend
+        baseDirectory: .next
         files:
           - '**/*'
       cache:
         paths:
-          - frontend/node_modules/**/*
+          - node_modules/**/*
     appRoot: frontend
