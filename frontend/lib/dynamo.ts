@@ -3,7 +3,7 @@ import { DynamoDBDocumentClient, ScanCommand } from "@aws-sdk/lib-dynamodb";
 import { SecurityFinding } from "./mockData";
 import { fetchAuthSession } from 'aws-amplify/auth';
 
-const TABLE_NAME = "CloudsentryAiStack-SecurityFindings64B9F477-155IPLHOF31MI";
+const TABLE_NAME = process.env.NEXT_PUBLIC_DYNAMODB_TABLE!;
 
 export async function getRealTimeFindings(): Promise<SecurityFinding[]> {
     try {
