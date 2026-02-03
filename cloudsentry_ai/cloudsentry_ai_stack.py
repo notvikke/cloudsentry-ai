@@ -171,3 +171,58 @@ class CloudsentryAiStack(Stack):
         # Outputs
         CfnOutput(self, "UserPoolId", value=user_pool.user_pool_id)
         CfnOutput(self, "UserPoolClientId", value=user_pool_client.user_pool_client_id)
+
+        # 8. Identity Pool (Bridge to AWS Services)
+        identity_pool = cognito.CfnIdentityPool(
+            self, "CloudSentryIdentityPool",
+            allow_unauthenticated_identities=False,
+            cognito_identity_providers=[
+                cognito.CfnIdentityPool.CognitoIdentityProviderProperty(
+                    client_id=user_pool_client.user_pool_client_id,
+                    provider_name=user_pool.user_pool_provider_name
+                )
+            ]
+        )
+        
+        CfnOutput(self, "IdentityPoolId", value=identity_pool.ref)
+
+        # 9. IAM Roles for Identity Pool
+        # Authenticated Role
+        authenticated_role = iam.Role(
+            self, "CloudSentryAuthRole",
+            assumed_by=iam.FederatedPrincipal(
+                "cognito-identity.amazonaws.com",
+                {
+                    "StringEquals": {
+                        "cognito-identity.amazonaws.com:aud": identity_pool.ref
+                    },
+                    "ForAnyValue:StringLike": {
+                        "cognito-identity.amazonaws.com:amr": "authenticated"
+                    }
+                },
+                "sts:AssumeRoleWithWebIdentity"
+            )
+        )
+
+        # Grant Permissions to the Authenticated Role
+        # Allow putting events to EventBridge (Simulate Threat)
+        authenticated_role.add_to_policy(iam.PolicyStatement(
+            effect=iam.Effect.ALLOW,
+            actions=["events:PutEvents"],
+            resources=["*"] # In production, restrict to specific Event Bus ARN
+        ))
+        
+        # Allow invoking Remediator Lambda (Remediate Threat)
+        remediator_lambda.grant_invoke(authenticated_role)
+        
+        # Allow reading DynamoDB Findings (Real-time Data) (Already in place? No, need to add)
+        table.grant_read_data(authenticated_role)
+
+        # Attach Role to Identity Pool
+        cognito.CfnIdentityPoolRoleAttachment(
+            self, "IdentityPoolRoleAttachment",
+            identity_pool_id=identity_pool.ref,
+            roles={
+                "authenticated": authenticated_role.role_arn
+            }
+        )
