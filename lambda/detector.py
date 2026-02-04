@@ -10,7 +10,7 @@ logger.setLevel(logging.INFO)
 bedrock = boto3.client(service_name='bedrock-runtime', region_name='us-east-1')
 
 # Model ID for Claude 3.5 Sonnet
-MODEL_ID = "anthropic.claude-3-5-sonnet-20240620-v1:0"
+MODEL_ID = "us.anthropic.claude-3-5-sonnet-20241022-v2:0"
 
 def handler(event, context):
     """
