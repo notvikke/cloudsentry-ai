@@ -12,6 +12,9 @@ bedrock = boto3.client(service_name='bedrock-runtime', region_name='us-east-1')
 # Model ID for Claude 3.5 Sonnet
 MODEL_ID = "us.anthropic.claude-3-5-sonnet-20241022-v2:0"
 
+# Initialize CloudWatch
+cloudwatch = boto3.client('cloudwatch')
+
 def handler(event, context):
     """
     Analyzes the incoming EventBridge event using Amazon Bedrock (Claude 3.5 Sonnet).
@@ -76,6 +79,47 @@ def handler(event, context):
         
         logger.info("AI Analysis: %s", json.dumps(ai_data))
         
+        # Feature: Emit Custom Metric to CloudWatch
+        try:
+            cloudwatch.put_metric_data(
+                Namespace='CloudSentry/Security',
+                MetricData=[
+                    {
+                        'MetricName': 'SecurityRiskDetected',
+                        'Dimensions': [
+                            {
+                                'Name': 'RiskLevel',
+                                'Value': ai_data.get("risk_level", "UNKNOWN")
+                            },
+                        ],
+                        'Value': 1,
+                        'Unit': 'Count'
+                    },
+                ]
+            )
+        except Exception as cw_error:
+            logger.error(f"Failed to push metrics to CloudWatch: {cw_error}")
+        
+        # Feature: Save Evidence to S3
+        if ai_data.get("risk_level") in ["HIGH", "CRITICAL"]:
+            bucket_name = os.environ.get('EVIDENCE_BUCKET_NAME')
+            if bucket_name:
+                try:
+                    s3 = boto3.client('s3')
+                    evidence_key = f"evidence/{event.get('id', 'unknown_id')}.json"
+                    s3.put_object(
+                        Bucket=bucket_name,
+                        Key=evidence_key,
+                        Body=json.dumps({
+                            "analysis": ai_data,
+                            "original_event": event
+                        }, indent=2),
+                        ContentType='application/json'
+                    )
+                    logger.info(f"Evidence saved to s3://{bucket_name}/{evidence_key}")
+                except Exception as s3_error:
+                    logger.error(f"Failed to save evidence to S3: {s3_error}")
+
         # Return simple dict for Step Functions
         return {
             "risk_level": ai_data.get("risk_level", "UNKNOWN"),

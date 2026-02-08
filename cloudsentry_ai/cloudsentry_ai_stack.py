@@ -11,6 +11,10 @@ from aws_cdk import (
     aws_dynamodb as dynamodb,
     aws_sns as sns,
     aws_cognito as cognito,
+    aws_cognito as cognito,
+    aws_s3 as s3,
+    aws_sqs as sqs,
+    aws_cloudwatch as cloudwatch,
     CfnOutput
 )
 from constructs import Construct
@@ -27,8 +31,11 @@ class CloudsentryAiStack(Stack):
             handler="detector.handler",
             code=_lambda.Code.from_asset("lambda"),
             description="Analyzes AWS events for security risks",
-            timeout=Duration.seconds(30) # AI models can take time
+            timeout=Duration.seconds(30), # AI models can take time
+            tracing=_lambda.Tracing.ACTIVE # Enable X-Ray Tracing
         )
+
+
         
         # Grant Bedrock permissions
         detector_lambda.add_to_role_policy(iam.PolicyStatement(
@@ -119,7 +126,8 @@ class CloudsentryAiStack(Stack):
             handler="remediator.handler",
             code=_lambda.Code.from_asset("lambda"),
             description="Executes automated security remediation",
-            timeout=Duration.seconds(30)
+            timeout=Duration.seconds(30),
+            tracing=_lambda.Tracing.ACTIVE # Enable X-Ray Tracing
         )
         
         # Grant Permissions to Fix Things
@@ -128,6 +136,9 @@ class CloudsentryAiStack(Stack):
             resources=["*"]
         ))
 
+        # 2. EventBridge Rule (The Trigger)
+        # Listens for S3 CreateBucket via CloudTrail
+        # Note: You must have CloudTrail enabled in your account for this to work
         # 2. EventBridge Rule (The Trigger)
         # Listens for S3 CreateBucket via CloudTrail
         # Note: You must have CloudTrail enabled in your account for this to work
@@ -147,8 +158,38 @@ class CloudsentryAiStack(Stack):
             )
         )
 
+        # --- NEW FEATURES: S3 & SQS ---
+
+        # Feature 1: SSQ Dead Letter Queue (Reliability)
+        # If the Step Function fails to trigger, the event goes here.
+        dlq = sqs.Queue(
+            self, "ThreatDetectionDLQ",
+            retention_period=Duration.days(14)
+        )
+
         # 3. Connect Rule -> State Machine (NOT Lambda)
-        rule.add_target(targets.SfnStateMachine(state_machine))
+        # Added DLQ to ensure no events are lost
+        rule.add_target(targets.SfnStateMachine(state_machine, dead_letter_queue=dlq))
+
+        # Feature 2: S3 Evidence Locker (Storage)
+        # Stores full JSON payloads of CRITICAL/HIGH risks for forensics
+        evidence_bucket = s3.Bucket(
+            self, "EvidenceLocker",
+            versioned=True,
+            encryption=s3.BucketEncryption.S3_MANAGED,
+            block_public_access=s3.BlockPublicAccess.BLOCK_ALL,
+            removal_policy=RemovalPolicy.DESTROY, # For dev only (would use RETAIN in prod)
+            auto_delete_objects=True # For dev only
+        )
+        
+        # Give Lambda permission to write to this bucket
+        evidence_bucket.grant_write(detector_lambda)
+        
+        # Pass Bucket Nmae to Lambda
+        detector_lambda.add_environment("EVIDENCE_BUCKET_NAME", evidence_bucket.bucket_name)
+
+        CfnOutput(self, "EvidenceBucketName", value=evidence_bucket.bucket_name)
+        CfnOutput(self, "DLQUrl", value=dlq.queue_url)
 
         # 7. Authentication (Cognito)
         user_pool = cognito.UserPool(
@@ -231,4 +272,49 @@ class CloudsentryAiStack(Stack):
             roles={
                 "authenticated": authenticated_role.role_arn
             }
+        )
+
+        # --- FEATURE: CloudWatch Dashboard (Observability) ---
+        dashboard = cloudwatch.Dashboard(
+            self, "CloudSentryDashboard",
+            dashboard_name="CloudSentry-CISO-Dashboard"
+        )
+
+        dashboard.add_widgets(
+            cloudwatch.GraphWidget(
+                title="Threat Detection Volume",
+                left=[detector_lambda.metric_invocations()],
+                right=[detector_lambda.metric_errors()],
+                width=12
+            ),
+            cloudwatch.GraphWidget(
+                title="AI Analysis Latency",
+                left=[detector_lambda.metric_duration()],
+                width=12
+            ),
+            cloudwatch.SingleValueWidget(
+                title="Critical Risks Detected",
+                metrics=[
+                    cloudwatch.Metric(
+                        namespace='CloudSentry/Security',
+                        metric_name='SecurityRiskDetected',
+                        dimensions_map={'RiskLevel': 'CRITICAL'}
+                    ),
+                    cloudwatch.Metric(
+                        namespace='CloudSentry/Security',
+                        metric_name='SecurityRiskDetected',
+                        dimensions_map={'RiskLevel': 'HIGH'}
+                    )
+                ],
+                width=6
+            ),
+            cloudwatch.SingleValueWidget(
+                title="Failed/Dropped Events (DLQ)",
+                metrics=[dlq.metric_approximate_number_of_messages_visible()],
+                width=6
+            )
+        )
+
+        CfnOutput(self, "DashboardURL", 
+            value=f"https://console.aws.amazon.com/cloudwatch/home?region={self.region}#dashboards:name=CloudSentry-CISO-Dashboard"
         )
